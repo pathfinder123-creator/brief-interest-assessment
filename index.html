@@ -41,17 +41,29 @@ C:{name:'Conventional',hex:'#1D75BC',desc:'You may enjoy organizing information,
 };
 const HEX_ORDER=['R','I','A','S','E','C'];
 const QUESTIONS=[
-{t:'R',q:'Repairing or maintaining vehicles, engines, or machinery'},{t:'R',q:'Building, installing, or fixing things with hand or power tools'},{t:'R',q:'Operating equipment or doing hands-on physical work outdoors'},
-{t:'I',q:'Researching how or why something works'},{t:'I',q:'Solving complex problems using data, logic, or experiments'},{t:'I',q:'Analyzing scientific findings or diagnosing a technical issue'},
-{t:'A',q:'Designing, drawing, or creating original visual work'},{t:'A',q:'Writing, composing music, or performing creatively'},{t:'A',q:'Coming up with new, unconventional ideas or designs'},
-{t:'S',q:'Teaching, coaching, or explaining something to someone'},{t:'S',q:'Helping someone work through a personal or health-related problem'},{t:'S',q:'Volunteering or caring for people in your community'},
-{t:'E',q:'Persuading others or selling an idea, product, or service'},{t:'E',q:'Leading a team or managing a project to reach a goal'},{t:'E',q:'Starting or running your own business'},
-{t:'C',q:'Organizing records, files, schedules, or data'},{t:'C',q:'Following clear procedures and checking work for accuracy'},{t:'C',q:'Managing budgets, spreadsheets, or detailed reports'}
+{t:'S',q:'Teaching, coaching, or explaining something to someone'},
+{t:'R',q:'Repairing or maintaining vehicles, engines, or machinery'},
+{t:'C',q:'Organizing records, files, schedules, or data'},
+{t:'A',q:'Designing, drawing, or creating original visual work'},
+{t:'I',q:'Researching how or why something works'},
+{t:'E',q:'Persuading others or selling an idea, product, or service'},
+{t:'I',q:'Solving complex problems using data, logic, or experiments'},
+{t:'E',q:'Leading a team or managing a project to reach a goal'},
+{t:'A',q:'Writing, composing music, or performing creatively'},
+{t:'C',q:'Following clear procedures and checking work for accuracy'},
+{t:'S',q:'Helping someone work through a personal or health-related problem'},
+{t:'R',q:'Building, installing, or fixing things with hand or power tools'},
+{t:'C',q:'Managing budgets, spreadsheets, or detailed reports'},
+{t:'A',q:'Coming up with new, unconventional ideas or designs'},
+{t:'R',q:'Operating equipment or doing hands-on physical work outdoors'},
+{t:'S',q:'Volunteering or caring for people in your community'},
+{t:'E',q:'Starting or running your own business'},
+{t:'I',q:'Analyzing scientific findings or diagnosing a technical issue'}
 ];
 const SCALE=[{v:1,label:'Strongly dislike'},{v:2,label:'Dislike'},{v:3,label:'Neutral'},{v:4,label:'Like'},{v:5,label:'Strongly like'}];
 const answers={};
-function buildForm(){const form=document.getElementById('quizForm');const track=document.getElementById('progressTrack');HEX_ORDER.forEach(code=>{const seg=document.createElement('div');seg.className='progress-seg';const bar=document.createElement('i');bar.style.background=TYPE_META[code].hex;seg.appendChild(bar);track.appendChild(seg)});QUESTIONS.forEach((item,idx)=>{const card=document.createElement('div');card.className='qcard';const meta=TYPE_META[item.t];card.innerHTML=`<div class="qhead"><span class="qnum">Q${idx+1}/18</span><span class="qtype" style="background:${meta.hex}">${meta.name}</span></div><p class="qtext">${item.q}</p><div class="scale" data-qindex="${idx}">${SCALE.map(s=>`<label><input type="radio" name="q${idx}" value="${s.v}"><span class="num">${s.v}</span>${s.label}</label>`).join('')}</div>`;form.appendChild(card)});form.addEventListener('change',e=>{if(e.target?.type==='radio'){const scale=e.target.closest('.scale');scale.querySelectorAll('label').forEach(l=>l.classList.remove('checked'));e.target.closest('label').classList.add('checked');answers[Number(scale.dataset.qindex)]=Number(e.target.value);updateProgress()}})}
-function updateProgress(){const count=Object.keys(answers).length;document.getElementById('submitBtn').disabled=count<18;document.getElementById('hintText').textContent=count<18?`Answer all 18 questions to unlock your results. (${count}/18 answered)`:'All set — see your Interest Code.';HEX_ORDER.forEach((code,g)=>{let n=0;for(let k=g*3;k<g*3+3;k++)if(answers[k]!==undefined)n++;document.querySelectorAll('.progress-seg')[g].querySelector('i').style.width=(n/3*100)+'%'})}
+function buildForm(){const form=document.getElementById('quizForm');const track=document.getElementById('progressTrack');HEX_ORDER.forEach(code=>{const seg=document.createElement('div');seg.className='progress-seg';const bar=document.createElement('i');bar.style.background=TYPE_META[code].hex;seg.appendChild(bar);track.appendChild(seg)});QUESTIONS.forEach((item,idx)=>{const card=document.createElement('div');card.className='qcard';card.innerHTML=`<div class="qhead"><span class="qnum">Q${idx+1}/18</span></div><p class="qtext">${item.q}</p><div class="scale" data-qindex="${idx}">${SCALE.map(s=>`<label><input type="radio" name="q${idx}" value="${s.v}"><span class="num">${s.v}</span>${s.label}</label>`).join('')}</div>`;form.appendChild(card)});form.addEventListener('change',e=>{if(e.target?.type==='radio'){const scale=e.target.closest('.scale');scale.querySelectorAll('label').forEach(l=>l.classList.remove('checked'));e.target.closest('label').classList.add('checked');answers[Number(scale.dataset.qindex)]=Number(e.target.value);updateProgress()}})}
+function updateProgress(){const count=Object.keys(answers).length;document.getElementById('submitBtn').disabled=count<18;document.getElementById('hintText').textContent=count<18?`Answer all 18 questions to unlock your results. (${count}/18 answered)`:'All set — see your Interest Code.';HEX_ORDER.forEach((code,g)=>{const n=QUESTIONS.reduce((count,item,idx)=>count+(item.t===code&&answers[idx]!==undefined?1:0),0);document.querySelectorAll('.progress-seg')[g].querySelector('i').style.width=(n/3*100)+'%'})}
 function scoreAnswers(){const scores={R:0,I:0,A:0,S:0,E:0,C:0};QUESTIONS.forEach((item,idx)=>scores[item.t]+=(answers[idx]||0));return scores}
 function rankScores(scores){return Object.keys(scores).sort((a,b)=>scores[b]-scores[a]||HEX_ORDER.indexOf(a)-HEX_ORDER.indexOf(b))}
 function showResults(){const scores=scoreAnswers();const ranked=rankScores(scores);const top3=ranked.slice(0,3);document.getElementById('codeBadges').innerHTML=top3.map(code=>`<div class="code-badge" style="background:${TYPE_META[code].hex}">${code}</div>`).join('');document.getElementById('clusterName').textContent=top3.map(code=>TYPE_META[code].name).join(' · ');document.getElementById('topGrid').innerHTML=top3.map((code,i)=>`<div class="interest-card"><div class="letter" style="background:${TYPE_META[code].hex}">${code}</div><h3>${i===0?'Strongest: ':i===1?'Second: ':'Third: '}${TYPE_META[code].name}</h3><p>${TYPE_META[code].desc}</p></div>`).join('');document.getElementById('results').style.display='block';document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'})}
